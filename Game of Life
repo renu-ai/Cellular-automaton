@@ -1,0 +1,195 @@
+#include<stdio.h>
+#include<graphics.h>
+#include<conio.h>
+#include<dos.h>
+#include<time.h>
+#include<stdlib.h>
+
+#define MYDELAY 3
+
+int board[40][40];
+int nextBoard[40][40];
+
+
+void generateBoard(void)
+{
+  int upper=1;
+  int lower=0;
+  int num,i,j, randNum;
+  for(i=0;i<40;i++)
+  {
+  for(j=0;j<40;j++)
+  {
+  randNum=rand();
+  num=(randNum%(upper-lower+1))+lower;
+  board[i][j]=num;
+  }
+  }
+
+}
+int findNeighbours(int row,int col)
+{
+  int xlow,xhigh;
+  int ylow,yhigh;
+  int count=0;
+  int x,y;
+
+  if(row==0)
+   xlow=row;
+  else
+   xlow=row-1;
+
+  if(row==39)
+   xhigh=row;
+  else
+   xhigh=row+1;
+
+  if(col==0)
+   ylow=col;
+  else
+   ylow=col-1;
+
+  if(col==39)
+   yhigh=col;
+  else
+   yhigh=col+1;
+
+   for(x=xlow;x<=xhigh;x++)
+   for(y=ylow;y<=yhigh;y++)
+   {
+     if(board[x][y])
+       count++;
+   }
+
+   if(board[row][col])
+     count--;
+  return count;
+}
+void copyBoard(void)
+{
+  int i,j;
+
+  for(i=0;i<40;i++)
+  for(j=0;j<40;j++)
+  {
+  board[i][j]=nextBoard[i][j];
+  nextBoard[i][j]=0;
+  }
+
+}
+void drawCell(int x,int y)
+{
+  setcolor(GREEN);
+   setfillstyle(SOLID_FILL,GREEN);
+    circle(x,y,4);
+    floodfill(x,y,GREEN);
+    //getch();
+   // delay(MYDELAY);
+
+
+}
+
+void eraseCell(int x,int y)
+{
+   setcolor(RED);
+   setfillstyle(SOLID_FILL,RED);
+      circle(x,y,4);
+      floodfill(x,y,RED);
+
+    // floodfill(x-3,y-3,7);
+    // setcolor(getbkcolor());
+  //circle(x,y,2);
+    //getch();
+   // delay(MYDELAY);
+
+}
+
+void drawBoard(void)
+{
+ int i,j,step=10,inr=0,offset=5,x=50,y=50;
+
+ for(i=0;i<40;i++)
+ {
+   for(j=0;j<40;j++)
+   {
+    if((board[i][j]) && (nextBoard[i][j]==0))
+    eraseCell(x+offset+(step*j),y+offset+inr);
+    if((board[i][j]==0) && (nextBoard[i][j]))
+    drawCell(x+offset+(step*j),y+offset+inr);
+    delay(MYDELAY);
+    } // for j
+  inr=inr+step;
+ } // for i
+
+}
+
+int main()
+{
+  int gd=DETECT,gm;
+  int x=50,y=50,i=0,j=0,inr=0,step=10,offset=5;
+  srand(time(NULL));
+
+  for(i=0;i<40;i++)
+  for(j=0;j<40;j++)
+  {
+  board[i][j]=0;
+  nextBoard[i][j]=0;
+  }
+  initgraph(&gd, &gm,"C:\\TURBOC3\\BGI");
+  setfillstyle(SOLID_FILL,BLUE);
+  setbkcolor(BLACK);
+  generateBoard();
+
+
+for(i=0;i<=40;i++)
+ {
+  setcolor(7);
+  line(x,y+inr,x+400,y+inr);
+  line(x+inr,y,x+inr,y+400);
+  if(i!=40)
+  {
+   for(j=0;j<40;j++)
+   {
+    if(board[i][j]!=0)
+    {
+    setcolor(BLUE);
+    circle(x+offset+(step*j),y+offset+inr,4);
+    floodfill(x+offset+(step*j),y+offset+inr,BLUE);
+    delay(MYDELAY);
+    } // if board
+   } // for j
+  } // if i !=40
+  inr=inr+step;
+ } // for i
+ for( int genCnt=0;genCnt<=15;genCnt++)
+ {
+ for(i=0;i<40;i++)
+ for(j=0;j<40;j++)
+ {
+  int nbrCnt=0;
+  nbrCnt=findNeighbours(i,j);
+
+  switch(nbrCnt)
+  {
+   case 0,1:
+     nextBoard[i][j]=0;
+     break;
+   case 2:
+     nextBoard[i][j]=board[i][j];
+     break;
+   case 3:
+     nextBoard[i][j]=1;
+     break;
+   case 4,5,6,7,8:
+     nextBoard[i][j]=0;
+  }
+ }
+ delay(10);
+ drawBoard();
+ copyBoard();
+ }
+getch();
+closegraph();
+return 0;
+
+}
